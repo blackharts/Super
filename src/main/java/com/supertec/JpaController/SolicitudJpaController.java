@@ -5,20 +5,19 @@
  */
 package com.supertec.JpaController;
 
+import com.supertec.JpaController.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.supertec.Clases.Cliente;
-import com.supertec.Clases.Solicitud;
-import com.supertec.Clases.Tecnico;
-import com.supertec.JpaController.exceptions.NonexistentEntityException;
-import com.supertec.JpaController.exceptions.RollbackFailureException;
+import com.supertec.clases.Cliente;
+import com.supertec.clases.Solicitud;
+import com.supertec.clases.Tecnico;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.transaction.UserTransaction;
+import javax.persistence.Persistence;
 
 /**
  *
@@ -26,22 +25,20 @@ import javax.transaction.UserTransaction;
  */
 public class SolicitudJpaController implements Serializable {
 
-    public SolicitudJpaController(UserTransaction utx, EntityManagerFactory emf) {
-        this.utx = utx;
-        this.emf = emf;
+    public SolicitudJpaController(EntityManagerFactory emf) {
+       this.emf = Persistence.createEntityManagerFactory("com.supertec_Supertec_war_1.0-SNAPSHOTPU");
     }
-    private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
         return emf.createEntityManager();
     }
 
-    public void create(Solicitud solicitud) throws RollbackFailureException, Exception {
+    public void create(Solicitud solicitud) {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             Cliente cliente = solicitud.getCliente();
             if (cliente != null) {
                 cliente = em.getReference(cliente.getClass(), cliente.getId());
@@ -61,14 +58,7 @@ public class SolicitudJpaController implements Serializable {
                 tecnico.getSolicitudCollection().add(solicitud);
                 tecnico = em.merge(tecnico);
             }
-            utx.commit();
-        } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
-            throw ex;
+            em.getTransaction().commit();
         } finally {
             if (em != null) {
                 em.close();
@@ -76,11 +66,11 @@ public class SolicitudJpaController implements Serializable {
         }
     }
 
-    public void edit(Solicitud solicitud) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Solicitud solicitud) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             Solicitud persistentSolicitud = em.find(Solicitud.class, solicitud.getId());
             Cliente clienteOld = persistentSolicitud.getCliente();
             Cliente clienteNew = solicitud.getCliente();
@@ -111,13 +101,8 @@ public class SolicitudJpaController implements Serializable {
                 tecnicoNew.getSolicitudCollection().add(solicitud);
                 tecnicoNew = em.merge(tecnicoNew);
             }
-            utx.commit();
+            em.getTransaction().commit();
         } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
                 Integer id = solicitud.getId();
@@ -133,11 +118,11 @@ public class SolicitudJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             Solicitud solicitud;
             try {
                 solicitud = em.getReference(Solicitud.class, id);
@@ -156,14 +141,7 @@ public class SolicitudJpaController implements Serializable {
                 tecnico = em.merge(tecnico);
             }
             em.remove(solicitud);
-            utx.commit();
-        } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
-            throw ex;
+            em.getTransaction().commit();
         } finally {
             if (em != null) {
                 em.close();

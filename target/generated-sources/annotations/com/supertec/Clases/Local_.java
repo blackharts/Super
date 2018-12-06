@@ -1,12 +1,12 @@
-package com.supertec.Clases;
+package com.supertec.clases;
 
-import com.supertec.Clases.Comuna;
-import com.supertec.Clases.Tecnico;
+import com.supertec.clases.Comuna;
+import com.supertec.clases.Tecnico;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="EclipseLink-2.6.1.v20150605-rNA", date="2018-12-05T18:00:57")
+@Generated(value="EclipseLink-2.6.1.v20150605-rNA", date="2018-12-06T18:21:09")
 @StaticMetamodel(Local.class)
 public class Local_ { 
 
