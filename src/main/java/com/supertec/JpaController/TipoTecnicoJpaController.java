@@ -5,21 +5,20 @@
  */
 package com.supertec.JpaController;
 
+import com.supertec.JpaController.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.supertec.Clases.Tecnico;
-import com.supertec.Clases.TipoTecnico;
-import com.supertec.JpaController.exceptions.NonexistentEntityException;
-import com.supertec.JpaController.exceptions.RollbackFailureException;
+import com.supertec.clases.Tecnico;
+import com.supertec.clases.TipoTecnico;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.transaction.UserTransaction;
+import javax.persistence.Persistence;
 
 /**
  *
@@ -27,25 +26,23 @@ import javax.transaction.UserTransaction;
  */
 public class TipoTecnicoJpaController implements Serializable {
 
-    public TipoTecnicoJpaController(UserTransaction utx, EntityManagerFactory emf) {
-        this.utx = utx;
-        this.emf = emf;
+    public TipoTecnicoJpaController(EntityManagerFactory emf) {
+        this.emf = Persistence.createEntityManagerFactory("com.supertec_Supertec_war_1.0-SNAPSHOTPU");
     }
-    private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
         return emf.createEntityManager();
     }
 
-    public void create(TipoTecnico tipoTecnico) throws RollbackFailureException, Exception {
+    public void create(TipoTecnico tipoTecnico) {
         if (tipoTecnico.getTecnicoCollection() == null) {
             tipoTecnico.setTecnicoCollection(new ArrayList<Tecnico>());
         }
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             Collection<Tecnico> attachedTecnicoCollection = new ArrayList<Tecnico>();
             for (Tecnico tecnicoCollectionTecnicoToAttach : tipoTecnico.getTecnicoCollection()) {
                 tecnicoCollectionTecnicoToAttach = em.getReference(tecnicoCollectionTecnicoToAttach.getClass(), tecnicoCollectionTecnicoToAttach.getId());
@@ -62,14 +59,7 @@ public class TipoTecnicoJpaController implements Serializable {
                     oldEspecialidadOfTecnicoCollectionTecnico = em.merge(oldEspecialidadOfTecnicoCollectionTecnico);
                 }
             }
-            utx.commit();
-        } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
-            throw ex;
+            em.getTransaction().commit();
         } finally {
             if (em != null) {
                 em.close();
@@ -77,11 +67,11 @@ public class TipoTecnicoJpaController implements Serializable {
         }
     }
 
-    public void edit(TipoTecnico tipoTecnico) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(TipoTecnico tipoTecnico) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             TipoTecnico persistentTipoTecnico = em.find(TipoTecnico.class, tipoTecnico.getId());
             Collection<Tecnico> tecnicoCollectionOld = persistentTipoTecnico.getTecnicoCollection();
             Collection<Tecnico> tecnicoCollectionNew = tipoTecnico.getTecnicoCollection();
@@ -110,13 +100,8 @@ public class TipoTecnicoJpaController implements Serializable {
                     }
                 }
             }
-            utx.commit();
+            em.getTransaction().commit();
         } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
                 Integer id = tipoTecnico.getId();
@@ -132,11 +117,11 @@ public class TipoTecnicoJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             TipoTecnico tipoTecnico;
             try {
                 tipoTecnico = em.getReference(TipoTecnico.class, id);
@@ -150,14 +135,7 @@ public class TipoTecnicoJpaController implements Serializable {
                 tecnicoCollectionTecnico = em.merge(tecnicoCollectionTecnico);
             }
             em.remove(tipoTecnico);
-            utx.commit();
-        } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
-            throw ex;
+            em.getTransaction().commit();
         } finally {
             if (em != null) {
                 em.close();

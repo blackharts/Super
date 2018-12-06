@@ -5,20 +5,19 @@
  */
 package com.supertec.JpaController;
 
+import com.supertec.JpaController.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.supertec.Clases.Tecnico;
-import com.supertec.Clases.Comuna;
-import com.supertec.Clases.Local;
-import com.supertec.JpaController.exceptions.NonexistentEntityException;
-import com.supertec.JpaController.exceptions.RollbackFailureException;
+import com.supertec.clases.Tecnico;
+import com.supertec.clases.Comuna;
+import com.supertec.clases.Local;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.transaction.UserTransaction;
+import javax.persistence.Persistence;
 
 /**
  *
@@ -26,22 +25,20 @@ import javax.transaction.UserTransaction;
  */
 public class LocalJpaController implements Serializable {
 
-    public LocalJpaController(UserTransaction utx, EntityManagerFactory emf) {
-        this.utx = utx;
-        this.emf = emf;
+    public LocalJpaController(EntityManagerFactory emf) {
+        this.emf = Persistence.createEntityManagerFactory("com.supertec_Supertec_war_1.0-SNAPSHOTPU");
     }
-    private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
         return emf.createEntityManager();
     }
 
-    public void create(Local local) throws RollbackFailureException, Exception {
+    public void create(Local local) {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             Tecnico tecnico = local.getTecnico();
             if (tecnico != null) {
                 tecnico = em.getReference(tecnico.getClass(), tecnico.getId());
@@ -61,14 +58,7 @@ public class LocalJpaController implements Serializable {
                 comuna.getLocalCollection().add(local);
                 comuna = em.merge(comuna);
             }
-            utx.commit();
-        } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
-            throw ex;
+            em.getTransaction().commit();
         } finally {
             if (em != null) {
                 em.close();
@@ -76,11 +66,11 @@ public class LocalJpaController implements Serializable {
         }
     }
 
-    public void edit(Local local) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Local local) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             Local persistentLocal = em.find(Local.class, local.getId());
             Tecnico tecnicoOld = persistentLocal.getTecnico();
             Tecnico tecnicoNew = local.getTecnico();
@@ -111,13 +101,8 @@ public class LocalJpaController implements Serializable {
                 comunaNew.getLocalCollection().add(local);
                 comunaNew = em.merge(comunaNew);
             }
-            utx.commit();
+            em.getTransaction().commit();
         } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
                 Integer id = local.getId();
@@ -133,11 +118,11 @@ public class LocalJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
-            utx.begin();
             em = getEntityManager();
+            em.getTransaction().begin();
             Local local;
             try {
                 local = em.getReference(Local.class, id);
@@ -156,14 +141,7 @@ public class LocalJpaController implements Serializable {
                 comuna = em.merge(comuna);
             }
             em.remove(local);
-            utx.commit();
-        } catch (Exception ex) {
-            try {
-                utx.rollback();
-            } catch (Exception re) {
-                throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
-            }
-            throw ex;
+            em.getTransaction().commit();
         } finally {
             if (em != null) {
                 em.close();

@@ -28,8 +28,8 @@
 
     <body class="text-center">
         <div class="container col-4 ">
-            <sf:form action="${pageContext.request.contextPath}/cliente/save" method="post"
-                     commandName="cliente" class="form-signin">
+            <sf:form action="cliente_save" method="post"
+                   commandName="cliente" class="form-signin">
                 <img class="mb-4" src="../../assets/brand/bootstrap-solid.svg" alt=""
                      width="72" height="72">
                 <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
@@ -50,9 +50,6 @@
 
                     <label for="inputPassword" class="sr-only">Nombre Completo</label>
                     <sf:input type="text" path="nombre" placeholder="Ingrese Su Nombre" class="form" />
-
-                    <label for="inputPassword" class="sr-only"></label>
-                    <sf:input type="text" path="nombre" placeholder="Ingrese Su Nombre" class="form" />
                     <label for="inputPassword" class="sr-only">Telefono</label>
                     <sf:input type="text" path="telefono" placeholder="cod+num"  class="form"/>
 
@@ -61,7 +58,7 @@
 
                     
                 </div>
-                    <input class="btn btn-lg btn-primary btn-block" type="submit" value="Guardar">
+                    <button class="btn btn-lg btn-primary btn-block" type="submit" value="Guardar"/>
                     <p class="mt-5 mb-3 text-muted">&copy; SuperTec-2018</p>
             </sf:form>
         </div>

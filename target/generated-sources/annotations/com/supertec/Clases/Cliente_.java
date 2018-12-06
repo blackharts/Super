@@ -1,13 +1,13 @@
-package com.supertec.Clases;
+package com.supertec.clases;
 
-import com.supertec.Clases.Solicitud;
+import com.supertec.clases.Solicitud;
 import java.util.Date;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.CollectionAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="EclipseLink-2.6.1.v20150605-rNA", date="2018-12-05T18:00:57")
+@Generated(value="EclipseLink-2.6.1.v20150605-rNA", date="2018-12-06T18:21:09")
 @StaticMetamodel(Cliente.class)
 public class Cliente_ { 
 
